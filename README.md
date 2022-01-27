@@ -53,7 +53,7 @@ Em seguida, escolha o script abaixo conforme a necessidade do projeto:
 <h3>new_django_project</h3>
 
 ```bash
-.\\new_django_project    <VIRTUAL_ENV>    <PROJECT_NAME>   <FIRST_APP_NAME>   <PATH>
+.\new_django_project    <VIRTUAL_ENV>    <PROJECT_NAME>   <FIRST_APP_NAME>   <PATH>
 ```
 <ul>
 <li>VIRTUAL_ENV: Argumento obrigatório*. Ativará este ambiente para a inicialização do projeto em questão; caso o ambiente passado não exista, será criado um, juntamente com a instalação padrão do Django</li>
