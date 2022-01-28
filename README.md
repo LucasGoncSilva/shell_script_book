@@ -55,14 +55,12 @@ Em seguida, escolha o script abaixo conforme a necessidade do projeto:
 ```bash
 .\new_django_project    <VIRTUAL_ENV>    <PROJECT_NAME>   <FIRST_APP_NAME>   <PATH>
 ```
-<ul>
-<li>VIRTUAL_ENV: Argumento obrigatório*. Ativará este ambiente para a inicialização do projeto em questão; caso o ambiente passado não exista, será criado um, juntamente com a instalação padrão do Django</li>
-<li>PROJECT_NAME: Argumento obrigatório*. Será o nome do projeto, onde ficarão todos os arquivos de configuração padrão</li>
-<li>FIRST_APP_NAME: Argumento obrigatório*. Será o nome do primeiro app, com rota definida e view index criada</li>
-<li>PATH: Argumento opcional*. Caso seja passado, será o endpoint de todas as saídas do script, ou seja, onde o projeto será criado. Nada sendo passado, o script será executado no diretório atual</li>
-</ul>
+* VIRTUAL_ENV: __Argumento obrigatório__. Ativará este ambiente para a inicialização do projeto em questão; caso o ambiente passado não exista, será criado um, juntamente com a instalação padrão do Django
+* PROJECT_NAME: __Argumento obrigatório__. Será o nome do projeto, onde ficarão todos os arquivos de configuração padrão
+* FIRST_APP_NAME: __Argumento obrigatório__. Será o nome do primeiro app, com rota definida e view index criada
+* PATH: __Argumento opcional__. Caso seja passado, será o endpoint de todas as saídas do script, ou seja, onde o projeto será criado. Nada sendo passado, o script será executado no diretório atual
 
-<p>Este script criará toda a estrutuda básica de um projeto Django com seu primeiro app, declarando-o dentro de `INSTALLED_APPS`.</p>
+Este script criará toda a estrutuda básica de um projeto Django com seu primeiro app, declarando-o dentro de `INSTALLED_APPS`.
 
 ```python
 # settings.py do diretório do projeto
@@ -83,7 +81,7 @@ INSTALLED_APPS = [
 
 ```
 
-<p>O modelo de app considerado aqui é com `include('app.urls')`:</p>
+O modelo de app considerado aqui é com `include('app.urls')`:
 
 ```python
 # urls.py do diretório do projeto
@@ -103,7 +101,7 @@ urlpatterns = [
 
 ```
 
-<p>Na pasta do app, criado após ser passado como argumento do script, o arquivo `urls.py` é automaticamente criado da maneira a seguir:</p>
+Na pasta do app, criado após ser passado como argumento do script, o arquivo `urls.py` é automaticamente criado da maneira a seguir:
 
 ```python
 # urls.py do diretório do app
@@ -121,7 +119,7 @@ urlpatterns = [
 
 ```
 
-<p>Finalmente, em `views.py` no diretório do app, o script cria a função index com `pass` definido, visto que aqui se define o HttpResponse() ou render(), a depender da necessidade:</p>
+Finalmente, em `views.py` no diretório do app, o script cria a função index com `pass` definido, visto que aqui se define o HttpResponse() ou render(), a depender da necessidade:
 
 ```python
 from django.shortcuts import render
