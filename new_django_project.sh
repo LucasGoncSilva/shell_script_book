@@ -39,6 +39,17 @@ then
 fi
 
 
+if [[ ${FILES} != *"${PROJECT_NAME}"* ]]
+then
+    mkdir ${PROJECT_NAME}
+    cd ${PROJECT_NAME}
+
+else
+    cd ${PROJECT_NAME}
+fi
+
+FILES=$(ls)
+
 if [[ ${FILES} != *"${VENV}"* ]]
 then
     echo "The passed virtual enviroment's name does not exist here."
@@ -64,8 +75,7 @@ echo "First app name = ${APP_NAME}"
 # Starting here
 printf "\n\nStarting project '${PROJECT_NAME}'...\n"
 
-django-admin startproject $PROJECT_NAME
-cd ./$PROJECT_NAME
+django-admin startproject $PROJECT_NAME .
 
 echo "${PROJECT_NAME} created successfully."
 
@@ -91,7 +101,7 @@ app_name = '${APP_NAME}'
 
 urlpatterns = [
     path('', views.index, name='index'),
-]" >.\\urls.py
+]" > .\\urls.py
 
 echo "def index(request):
     pass" >> .\\views.py
