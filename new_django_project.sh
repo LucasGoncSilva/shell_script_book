@@ -75,7 +75,7 @@ echo "First app name = ${APP_NAME}"
 # Starting here
 printf "\n\nStarting project '${PROJECT_NAME}'...\n"
 
-django-admin startproject $PROJECT_NAME .
+django-admin startproject ${PROJECT_NAME^^} .
 
 echo "${PROJECT_NAME} created successfully."
 
@@ -85,10 +85,10 @@ python ./manage.py startapp $APP_NAME
 
 echo "Setting '${APP_NAME}' as an installed app and creating it url address"
 
-sed -i "34 i \    '${APP_NAME}'," .\\${PROJECT_NAME}\\settings.py
+sed -i "34 i \    '${APP_NAME}'," .\\${PROJECT_NAME^^}\\settings.py
 
-sed -i '17s/.*/from django.urls import path, include/' .\\${PROJECT_NAME}\\urls.py
-sed -i "21 i \    path('${APP_NAME}/', include('${APP_NAME}.urls'))," .\\${PROJECT_NAME}\\urls.py
+sed -i '17s/.*/from django.urls import path, include/' .\\${PROJECT_NAME^^}\\urls.py
+sed -i "21 i \    path('${APP_NAME}/', include('${APP_NAME}.urls'))," .\\${PROJECT_NAME^^}\\urls.py
 
 echo "Creating index view function..."
 
