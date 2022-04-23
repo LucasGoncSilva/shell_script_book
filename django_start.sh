@@ -141,7 +141,7 @@ sed -i "32s/.*/DEBUG = env.bool('DEBUG', False)/" .\\${PROJECT_NAME^^}\\settings
 sed -i "34s/.*/ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')/" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "40 i \    # Default" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "47 i \    # 3rd party" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "48 i \    'whitenoise'" .\\${PROJECT_NAME^^}\\settings.py
+sed -i "48 i \    'whitenoise,'" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "49 i \    # Local" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "50 i \    '${APP_NAME}'," .\\${PROJECT_NAME^^}\\settings.py
 sed -i "55 i \    'whitenoise.middleware.WhiteNoiseMiddleware'," .\\${PROJECT_NAME^^}\\settings.py
@@ -160,7 +160,7 @@ sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^
 
 
 # Editing manage.py
-sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\${PROJECT_NAME^^}\\asgi.py
+sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\${PROJECT_NAME^^}\\manage.py
 
 
 # Separating dev and deploy settings/config
