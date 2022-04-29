@@ -133,6 +133,8 @@ python ./manage.py startapp $APP_NAME
 
 echo "Setting '${APP_NAME}' as an installed app and creating it url address"
 
+mkdir static templates
+
 
 # Editing settings.py
 sed -i -e "14 i \\\nimport environ\n\n\nenv = environ.Env()\n" .\\${PROJECT_NAME^^}\\settings.py
@@ -145,8 +147,10 @@ sed -i "48 i \    'whitenoise,'" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "49 i \    # Local" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "50 i \    '${APP_NAME}'," .\\${PROJECT_NAME^^}\\settings.py
 sed -i "55 i \    'whitenoise.middleware.WhiteNoiseMiddleware'," .\\${PROJECT_NAME^^}\\settings.py
+sed -i "69s/.*/        'DIRS': [BASE_DIR / 'templates'],/" .\\${PROJECT_NAME^^}\\settinggs.py
 sed -i "131 i \STATIC_ROOT = BASE_DIR / 'staticfiles'" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "132 i \STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'" .\\${PROJECT_NAME^^}\\settings.py
+sed -i "133 i \STATICFILES_DIRS = [BASE_DIR / 'static']" .\\${PROJECT_NAME^^}\\settings.py
 
 
 # Editing urls.py
@@ -178,7 +182,11 @@ env = environ.Env()
 
 DATABASES = {
     'default': env.db()
-}" > .\\${PROJECT_NAME}\\settings\\deploy.py
+}
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True" > .\\${PROJECT_NAME}\\settings\\deploy.py
 
 
 # Creating apps's view as function
