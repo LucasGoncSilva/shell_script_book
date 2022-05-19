@@ -115,6 +115,7 @@ from sys import argv
 environ['DEBUG'] = 'True'
 environ['SECRET_KEY'] = '---' # Your project's secret key
 environ['ALLOWED_HOSTS'] = '*'
+environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.deploy'
 
 system('py .\manage.py ' + ' '.join([i for i in argv[1:]]))" > .\\orchestrator.py
 
@@ -143,7 +144,7 @@ sed -i "32s/.*/DEBUG = env.bool('DEBUG', False)/" .\\${PROJECT_NAME^^}\\settings
 sed -i "34s/.*/ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')/" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "40 i \    # Default" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "47 i \    # 3rd party" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "48 i \    'whitenoise,'" .\\${PROJECT_NAME^^}\\settings.py
+sed -i "48 i \    'whitenoise'," .\\${PROJECT_NAME^^}\\settings.py
 sed -i "49 i \    # Local" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "50 i \    '${APP_NAME}'," .\\${PROJECT_NAME^^}\\settings.py
 sed -i "55 i \    'whitenoise.middleware.WhiteNoiseMiddleware'," .\\${PROJECT_NAME^^}\\settings.py
@@ -156,6 +157,9 @@ sed -i "133 i \STATICFILES_DIRS = [BASE_DIR / 'static']" .\\${PROJECT_NAME^^}\\s
 # Editing urls.py
 sed -i '17s/.*/from django.urls import path, include/' .\\${PROJECT_NAME^^}\\urls.py
 sed -i "21 i \    path('${APP_NAME}/', include('${APP_NAME}.urls'))," .\\${PROJECT_NAME^^}\\urls.py
+sed -i "21 i \    # User's routes" .\\${PROJECT_NAME^^}\\urls.py
+sed -i "20 i \    # System's routes" .\\${PROJECT_NAME^^}\\urls.py
+sed -i "20 i \    # Adm's routes" .\\${PROJECT_NAME^^}\\urls.py
 
 
 # Editing asgi.py and wsgi.py
@@ -164,7 +168,7 @@ sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^
 
 
 # Editing manage.py
-sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\${PROJECT_NAME^^}\\manage.py
+sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\manage.py
 
 
 # Separating dev and deploy settings/config
