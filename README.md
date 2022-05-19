@@ -27,8 +27,7 @@
 
 
 <p align='center'>
-<img align='center' src='https://img.shields.io/badge/-Successfully%20done-0b0?style=for-the-badge'/>
-<img align='center' src='https://img.shields.io/badge/-work%20in%20progress...-fb0?style=for-the-badge'/>
+<img align='center' src='https://img.shields.io/badge/-work%20in%20progress%20as%20needed...-fb0?style=for-the-badge'/>
 <p>
 
 
