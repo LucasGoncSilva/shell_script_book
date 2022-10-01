@@ -74,7 +74,7 @@ and then calling manage.py using shell, also using the args
 
 e.g. python manage.py migrate --> --> python orchestrator.py migrate
                                                     ^^
-                                          the result is the same
+                                        the execution is the same
 
 
 Press enter to continue..."
@@ -92,7 +92,10 @@ python -m pip install whitenoise
 python -m pip install gunicorn
 python -m pip install django-environ
 
-python -m pip freeze > .\\requirements.txt
+echo "-r requirements/prod.txt" > .\\requirements.txt
+
+
+python -m pip freeze > .\\requirements\\prod.txt
 
 
 printf '\n\nAbout to start a new Django project...\n\n'
@@ -101,7 +104,7 @@ echo "First app name = ${APP_NAME}"
 
 
 # Deploy stuff
-echo "Creating files for Heroku's deploy"
+echo "Creating files for deploy"
 
 echo "python-3.10.4" > .\\runtime.txt
 echo "web: gunicorn INVENTORY.wsgi" > .\\Procfile
@@ -115,7 +118,7 @@ from sys import argv
 environ['DEBUG'] = 'True'
 environ['SECRET_KEY'] = '---' # Your project's secret key
 environ['ALLOWED_HOSTS'] = '*'
-environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.deploy'
+environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.base'
 
 system('py .\manage.py ' + ' '.join([i for i in argv[1:]]))" > .\\orchestrator.py
 
@@ -163,12 +166,12 @@ sed -i "20 i \    # Adm's routes" .\\${PROJECT_NAME^^}\\urls.py
 
 
 # Editing asgi.py and wsgi.py
-sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\${PROJECT_NAME^^}\\wsgi.py
-sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\${PROJECT_NAME^^}\\asgi.py
+sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\${PROJECT_NAME^^}\\wsgi.py
+sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\${PROJECT_NAME^^}\\asgi.py
 
 
 # Editing manage.py
-sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.base')/" .\\manage.py
+sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\manage.py
 
 
 # Separating dev and deploy settings/config
@@ -181,16 +184,14 @@ echo "import environ
 from ${PROJECT_NAME^^}.settings.base import *
 
 
-env = environ.Env()
-
-
 DATABASES = {
-    'default': env.db()
+    'default': {}
 }
 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True" > .\\${PROJECT_NAME}\\settings\\deploy.py
+SECURE_SSL_REDIRECT = True
+" > .\\${PROJECT_NAME}\\settings\\deploy.py
 
 
 # Creating apps's view as function
@@ -198,16 +199,19 @@ echo "Creating index view function..."
 
 cd .\\${APP_NAME}
 
-echo "from django.urls import path
+echo "from django.urls import path, URLPattern
+
 from . import views
 
 app_name = '${APP_NAME}'
 
-urlpatterns = [
+urlpatterns: list[URLPattern] = [
     path('', views.index, name='index'),
-]" > .\\urls.py
+]
+" > .\\urls.py
 
-echo "def index(request):
-    pass" >> .\\views.py
+echo "def index(req: HttpRequest) -> HttpResponse:
+    pass
+" >> .\\views.py
 
 echo 'Script completed! Hope you know to continue... :D'

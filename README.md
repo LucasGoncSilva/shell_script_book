@@ -31,40 +31,6 @@
 <p>
 
 
-<p align='center'>:link: Check here: https://DELLME :link:</p>
-
-
-<br>
-<hr>
-
-
-<h2 align='center'>:floppy_disk: Applied Technologies :cloud:</h2>
-
-
-![HTML logo](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS logo](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![Sass logo](https://img.shields.io/badge/Sass-CC6699?style=for-the-badge&logo=sass&logoColor=white)
-![JavaScript logo](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
-![Bootstrap logo](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
-<hr>
-
-
-![Django logo](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green)
-![Flask logo](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-<hr>
-
-
-![SQLite logo](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
-![PostgreSQL logo](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![MongoDB logo](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-<hr>
-
-
-![AWS logo](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
-![Vercel logo](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![Heroku logo](https://img.shields.io/badge/Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white)
-
-
 <br>
 <hr>
 
@@ -121,7 +87,7 @@ Then execute any script below:
 * FIRST_APP_NAME: __REQUIRED__. First app's name, not-empty route using function-based-view
 * PATH: __OPTIONAL__. This path is going to be this script's endpoint
 
-This script will create all base structure for a new Django project and it first app, declaring it inside `INSTALLED_APPS`, following some deploy's best practices and preparing the app for Heroku's environ (very easy to adapt for other cloud infra).
+This script will create all base structure for a new Django project and it first app, declaring it inside `INSTALLED_APPS`, following some deploy's best practices and preparing the app.
 
 ```bash
 ./django_start.sh env cripto pricing
@@ -134,14 +100,9 @@ This script will create all base structure for a new Django project and it first
 
 INSTALLED_APPS = [
     # Default
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    ...
     # 3rd party
-    'whitenoise',  # App installed for running on Heroku
+    'whitenoise',  # App installed for running on prod
     # Local
     'pricing',  # Your app
 ]
