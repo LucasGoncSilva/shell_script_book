@@ -1,51 +1,31 @@
 #!/bin/bash
 
-if [[ -z $3 ]]
-then
-    echo "Must pass 3 args:
+echo "
+    __ __                                      __               __
+.--|  |__|.---.-.-----.-----.-----.    .-----.|  |_.---.-.----.|  |_
+|  _  |  ||  _  |     |  _  |  _  |    |__ --||   _|  _  |   _||   _|
+|_____|  ||___._|__|__|___  |_____|____|_____||____|___._|__|  |____|
+     |___|            |_____|    |______|
 
-
-{{ script }}      <VENV>       <PROJECT_NAME>        <FIRST_APP_NAME>
-                    ^^^              ^^^                    ^^^
-                Venv's name     Project's name        First app's name
-             (existing or not,                      (www.project.com/app)
-             like 'venv_django'                                      ^^
-             with no bar or dot)                              not empty route
-
-
-
-You're able to pass a path as 4th arg to execute this script:
-
-{{ script }} VENV    PROJECT_NAME    FIRST_APP_NAME    PATH_TO_DESTINATION
-                                                                ^^
-                                                           not required
-
-
+An automated script to start a Django project
 "
-    echo "Press enter and retry"
-    read ok
-    exit
-fi
 
+printf "Name of the virtual enviroment (creating if inexistent): "
+read VENV
 
-VENV=$1
-PROJECT_NAME=$2
-APP_NAME=$3
+printf "Name of the project: "
+read PROJECT_NAME
+
+printf "Name of the first app: "
+read APP_NAME
+
 FILES=$(ls)
-
-
-# Checking if there is a path
-if [[ $4 ]]
-then
-    cd $4
-fi
 
 
 if [[ ${FILES} != *"${PROJECT_NAME}"* ]]
 then
     mkdir ${PROJECT_NAME}
     cd ${PROJECT_NAME}
-
 else
     cd ${PROJECT_NAME}
 fi
@@ -116,11 +96,22 @@ from sys import argv
 
 
 environ['DEBUG'] = 'True'
-environ['SECRET_KEY'] = '---' # Your project's secret key
-environ['ALLOWED_HOSTS'] = '*'
+environ['SECRET_KEY'] = 'replace with the real secret_key'
+environ['ALLOWED_HOSTS'] = '* 127.0.0.1'
 environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.base'
 
-system('py .\manage.py ' + ' '.join([i for i in argv[1:]]))" > .\\orchestrator.py
+# environ['EMAIL_HOST_USER'] = ''
+# environ['EMAIL_HOST_PASSWORD'] = ''
+
+
+if argv[1] == 'runserver' and environ.get('DEBUG') == 'False':
+    system('py manage.py collectstatic --noinput')
+elif argv[1] == 'test':
+    environ['DEBUG'] = 'False'
+    system('py manage.py collectstatic --noinput')
+
+system('py manage.py ' + ' '.join([i for i in argv[1:]]))
+" > .\\orchestrator.py
 
 
 # Starting project
