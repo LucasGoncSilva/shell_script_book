@@ -16,7 +16,7 @@ An automated script to start an Express.js project
 printf "Project's name: "
 read PROJECT_NAME
 
-printf "Main server filename (with extension): "
+printf "Main server filename (with no extension): "
 read MAIN_FILENAME
 
 printf "Database choice for prisma
@@ -40,7 +40,7 @@ npm i @prisma/client cors express
 npm i -D ts-node-dev typescript @types/cors @types/express prisma
 
 sed -i '8s/.*/    "build": "tsc",/' package.json
-sed -i '9i   "dev": "tsnd src/server.ts"' package.json
+sed -i '9i   "dev": "tsnd --exit-child src/server.ts"' package.json
 
 
 echo "Creating main file"
@@ -74,7 +74,7 @@ app.post('/', async (req, res) => {
 })
 
 
-app.listen(3333)" >> "./src/${MAIN_FILENAME}"
+app.listen(3333)" >> "./src/${MAIN_FILENAME}.ts"
 
 
 npx tsc --init
@@ -82,6 +82,7 @@ npx tsc --init
 sed -i '29s/.*/    "rootDir": ".\/src",                                  \/* Specify the root folder within your source files. *\//' tsconfig.json
 sed -i '30s/.*/    "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. *\//' tsconfig.json
 sed -i '52s/.*/    "outDir": "./build",                                   /* Specify an output folder for all emitted files. *\//' tsconfig.json
+
 
 npx prisma init --datasource-provider ${DB}
 

@@ -88,6 +88,21 @@ echo "Creating files for deploy"
 
 echo "python-3.10.4" > .\\runtime.txt
 echo "web: gunicorn INVENTORY.wsgi" > .\\Procfile
+echo "{
+  \"builds\": [
+    {
+      \"src\": \"vercel_app/wsgi.py\",
+      \"use\": \"@vercel/python\"
+    }
+  ],
+  \"routes\": [
+    {
+      \"src\": \"/(.*)\",
+      \"dest\": \"vercel_app/wsgi.py\"
+    }
+  ]
+}
+" >> .\\vercel.json
 
 
 # Enviroment variable settings
@@ -96,8 +111,7 @@ from sys import argv
 
 
 environ['DEBUG'] = 'True'
-environ['SECRET_KEY'] = 'replace with the real secret_key'
-environ['ALLOWED_HOSTS'] = '* 127.0.0.1'
+environ['ALLOWED_HOSTS'] = '*,127.0.0.1,localhost'
 environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.base'
 
 # environ['EMAIL_HOST_USER'] = ''
@@ -170,7 +184,7 @@ mkdir .\\${PROJECT_NAME}\\settings
 
 mv .\\${PROJECT_NAME}\\settings.py .\\${PROJECT_NAME}\\settings\\base.py
 
-echo "import environ
+echo "from os import environ
 
 from ${PROJECT_NAME^^}.settings.base import *
 
@@ -178,6 +192,10 @@ from ${PROJECT_NAME^^}.settings.base import *
 DATABASES = {
     'default': {}
 }
+
+DEBUG = environ['DEBUG']
+ALLOWED_HOSTS = environ['ALLOWED_HOSTS']
+SECRET_KEY = environ['SECRET_KEY']
 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -204,5 +222,8 @@ urlpatterns: list[URLPattern] = [
 echo "def index(req: HttpRequest) -> HttpResponse:
     pass
 " >> .\\views.py
+
+echo "If using vercel, deal with db and asgi/wsgi app var name
+Remember using 'py orchestrator.py check --deploy'"
 
 echo 'Script completed! Hope you know to continue... :D'
