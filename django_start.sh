@@ -86,23 +86,78 @@ echo "First app name = ${APP_NAME}"
 # Deploy stuff
 echo "Creating files for deploy"
 
-echo "python-3.10.4" > .\\runtime.txt
-echo "web: gunicorn INVENTORY.wsgi" > .\\Procfile
+echo "python-3.11.2" > .\\runtime.txt
+echo "web: gunicorn ${PROJECT_NAME^^}.wsgi" > .\\Procfile
 echo "{
   \"builds\": [
     {
-      \"src\": \"vercel_app/wsgi.py\",
+      \"src\": \"${PROJECT_NAME^^}/wsgi.py\",
       \"use\": \"@vercel/python\"
+    },
+    {
+      \"src\": \"deploy.sh\",
+      \"use\": \"@vercel/static-build\",
+      \"config\": {
+        \"distDir\": \"staticfiles\"
+      }
     }
   ],
   \"routes\": [
     {
       \"src\": \"/(.*)\",
-      \"dest\": \"vercel_app/wsgi.py\"
+      \"dest\": \"${PROJECT_NAME^^}/wsgi.py\"
     }
   ]
 }
 " >> .\\vercel.json
+
+echo "echo \"
+
+Starting deploy build\"
+echo \"___________________________\"
+
+
+echo \"
+___________________________\"
+echo \"Downloading requirements\"
+echo \"___________________________\"
+python3.9 -m pip install -r requirements.txt
+
+
+echo \"
+___________________________\"
+echo \"Migrating DB\"
+echo \"___________________________\"
+python3.9 manage.py makemigrations
+python3.9 manage.py migrate
+
+
+echo \"
+___________________________\"
+echo \"Collecting static files (css, img, js)\"
+echo \"___________________________\"
+python3.9 manage.py collectstatic --noinput --clear
+
+
+echo \"
+___________________________\"
+echo \"Dealing with unused files (tests, .gitignore, ...)\"
+echo \"___________________________\"
+find requirements.txt -delete
+find .gitignore -delete
+find LICENSE -delete
+find tests/* tests/.*  -delete
+rmdir tests
+find requirements/* requirements/.*  -delete
+rmdir requirements
+
+
+echo \"
+
+Ending deploy build\"
+echo \"___________________________\"
+
+" >> deploy.sh
 
 
 # Enviroment variable settings
@@ -146,10 +201,10 @@ mkdir static templates
 
 
 # Editing settings.py
-sed -i -e "14 i \\\nimport environ\n\n\nenv = environ.Env()\n" .\\${PROJECT_NAME^^}\\settings.py
+sed -i -e "14 i \\\nfrom os import environ\n\n\n## VIRTUAL ENVIROMENTS ACCESSIBLES USING `environ[\'var_name\']`\n" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "22s/.*/BASE_DIR = Path(__file__).resolve().parent.parent.parent/" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "32s/.*/DEBUG = env.bool('DEBUG', False)/" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "34s/.*/ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')/" .\\${PROJECT_NAME^^}\\settings.py
+sed -i "32s/.*/DEBUG = environ.get('DEBUG', False)/" .\\${PROJECT_NAME^^}\\settings.py
+sed -i "34s/.*/ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(',')/" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "40 i \    # Default" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "47 i \    # 3rd party" .\\${PROJECT_NAME^^}\\settings.py
 sed -i "48 i \    'whitenoise'," .\\${PROJECT_NAME^^}\\settings.py
@@ -166,8 +221,8 @@ sed -i "133 i \STATICFILES_DIRS = [BASE_DIR / 'static']" .\\${PROJECT_NAME^^}\\s
 sed -i '17s/.*/from django.urls import path, include/' .\\${PROJECT_NAME^^}\\urls.py
 sed -i "21 i \    path('${APP_NAME}/', include('${APP_NAME}.urls'))," .\\${PROJECT_NAME^^}\\urls.py
 sed -i "21 i \    # User's routes" .\\${PROJECT_NAME^^}\\urls.py
-sed -i "20 i \    # System's routes" .\\${PROJECT_NAME^^}\\urls.py
 sed -i "20 i \    # Adm's routes" .\\${PROJECT_NAME^^}\\urls.py
+sed -i "20 i \    # System's routes" .\\${PROJECT_NAME^^}\\urls.py
 
 
 # Editing asgi.py and wsgi.py
@@ -184,18 +239,59 @@ mkdir .\\${PROJECT_NAME}\\settings
 
 mv .\\${PROJECT_NAME}\\settings.py .\\${PROJECT_NAME}\\settings\\base.py
 
+echo "
+# Custom User model
+
+# AUTH_USER_MODEL = 'account.User'
+# LOGOUT_REDIRECT_URL = 'conta/entrar'
+
+
+# Crispy Forms
+
+# CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+# E-mail configs
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = environ['EMAIL_HOST_USER']
+# EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
+
+
+# Messages configs for bootstrap alerts
+
+# MESSAGE_TAGS = {
+#     messages.DEBUG: 'alert-primary',
+#     messages.INFO: 'alert-info',
+#     messages.SUCCESS: 'alert-success',
+#     messages.WARNING: 'alert-warning',
+#     messages.ERROR: 'alert-danger',
+# }
+" >> .\\${PROJECT_NAME}\\settings\\base.py
+
 echo "from os import environ
 
 from ${PROJECT_NAME^^}.settings.base import *
 
 
 DATABASES = {
-    'default': {}
+    # 'default': URL
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': environ.get('DB_NAME'),
+        'USER': environ.get('DB_USER'),
+        'PASSWORD': environ.get('DB_PASSWORD'),
+        'HOST': environ.get('DB_HOST'),
+        'PORT': '5432',
+    }
 }
 
-DEBUG = environ['DEBUG']
-ALLOWED_HOSTS = environ['ALLOWED_HOSTS']
-SECRET_KEY = environ['SECRET_KEY']
+DEBUG = environ.get('DEBUG')
+ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(',')
+SECRET_KEY = environ.get('SECRET_KEY')
 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
