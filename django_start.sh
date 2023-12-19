@@ -1,4 +1,5 @@
 #!/bin/bash
+cd test
 
 echo "
     __ __                                      __               __
@@ -10,8 +11,6 @@ echo "
 An automated script to start a Django project
 "
 
-printf "Name of the virtual enviroment (creating if inexistent): "
-read VENV
 
 printf "Name of the project: "
 read PROJECT_NAME
@@ -19,97 +18,65 @@ read PROJECT_NAME
 printf "Name of the first app: "
 read APP_NAME
 
-FILES=$(ls)
+mkdir ${PROJECT_NAME}
+cd ${PROJECT_NAME}
 
 
-if [[ ${FILES} != *"${PROJECT_NAME}"* ]]
-then
-    mkdir ${PROJECT_NAME}
-    cd ${PROJECT_NAME}
-else
-    cd ${PROJECT_NAME}
-fi
 
 
-FILES=$(ls)
+
+printf "
+===========================================================================
+CREATING NEW PROJECT WITH DJANGO_START
+
+PROJECT: ${PROJECT_NAME}
+PROJECT MAIN DIRECTORY: CORE/
+1st APP: ${APP_NAME}
+1st APP DIR: ${APP_NAME}/
+ENV NAME: env
+===========================================================================
+"
 
 
-if [[ ${FILES} != *"${VENV}"* ]]
-then
-    echo "The passed virtual enviroment's name does not exist here."
-    echo "Creating a venv using the passed name"
-    python -m venv ${VENV}
-    printf "Virtual enviroment created.\n\n\n"
-fi
 
 
-# orchestrator.py warning
 
-echo "After this script, for correct use of environment variables,
-remember to run orchestrator.py instead of manage.py
+printf "
 
-Reason: orchestrator.py is going to set all the enviroment variables
-and then calling manage.py using shell, also using the args
-
-
-e.g. python manage.py migrate --> --> python orchestrator.py migrate
-                                                    ^^
-                                        the execution is the same
+===========================================================================
+Creating virtual environment and installing dependencies
+===========================================================================
+"
 
 
-Press enter to continue..."
-read ok
+python3 -m venv env
 
-# Starting the venv
-echo "Activating virtual enviroment..."
-source .\\${VENV}\\Scripts\\activate
-echo "Virtual enviroment activated. Checking for installed packages and"
-echo "also installing if necessary."
+source env/bin/activate
 
-
-python -m pip install django
-python -m pip install whitenoise
-python -m pip install gunicorn
-python -m pip install django-environ
-
-echo "-r requirements/prod.txt" > .\\requirements.txt
+python3 -m pip install django
+python3 -m pip install whitenoise
+python3 -m pip install gunicorn
+python3 -m pip install psycopg2-binary
 
 
-python -m pip freeze > .\\requirements\\prod.txt
 
 
-printf '\n\nAbout to start a new Django project...\n\n'
-printf "\n\nProject name = ${PROJECT_NAME}\n"
-echo "First app name = ${APP_NAME}"
 
+printf "
 
-# Deploy stuff
-echo "Creating files for deploy"
+===========================================================================
+Creating devops files
+===========================================================================
+"
 
-echo "python-3.11.2" > .\\runtime.txt
-echo "web: gunicorn ${PROJECT_NAME^^}.wsgi" > .\\Procfile
-echo "{
-  \"builds\": [
-    {
-      \"src\": \"${PROJECT_NAME^^}/wsgi.py\",
-      \"use\": \"@vercel/python\"
-    },
-    {
-      \"src\": \"deploy.sh\",
-      \"use\": \"@vercel/static-build\",
-      \"config\": {
-        \"distDir\": \"staticfiles\"
-      }
-    }
-  ],
-  \"routes\": [
-    {
-      \"src\": \"/(.*)\",
-      \"dest\": \"${PROJECT_NAME^^}/wsgi.py\"
-    }
-  ]
-}
-" >> .\\vercel.json
+echo "Django==5.0
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+whitenoise==6.6.0" > requirements.txt
+
+echo "python3-3.11.2" > runtime.txt
+echo "web: gunicorn CORE.wsgi" > Procfile
+wget "https://lucasgoncsilva.github.io/snippets/examples/vercel/deploy/DJANGO_vercel.json" -O vercel.json
 
 echo "echo \"
 
@@ -144,182 +111,159 @@ ___________________________\"
 echo \"Dealing with unused files (tests, .gitignore, ...)\"
 echo \"___________________________\"
 find requirements.txt -delete
-find .gitignore -delete
 find LICENSE -delete
-find tests/* tests/.*  -delete
-rmdir tests
-find requirements/* requirements/.*  -delete
-rmdir requirements
+find tests/* tests/.* ./*/test*.py test/* -delete
 
 
 echo \"
 
 Ending deploy build\"
 echo \"___________________________\"
-
 " >> deploy.sh
 
 
-# Enviroment variable settings
-echo "from os import environ, system
-from sys import argv
 
 
-environ['DEBUG'] = 'True'
-environ['ALLOWED_HOSTS'] = '*,127.0.0.1,localhost'
-environ['DJANGO_SETTINGS_MODULE'] = '${PROJECT_NAME^^}.settings.base'
 
-# environ['EMAIL_HOST_USER'] = ''
-# environ['EMAIL_HOST_PASSWORD'] = ''
+printf "
 
+===========================================================================
+Starting project ${PROJECT_NAME}
+===========================================================================
+"
 
-if argv[1] == 'runserver' and environ.get('DEBUG') == 'False':
-    system('py manage.py collectstatic --noinput')
-elif argv[1] == 'test':
-    environ['DEBUG'] = 'False'
-    system('py manage.py collectstatic --noinput')
+mkdir ${PROJECT_NAME^^}
+cd ${PROJECT_NAME^^}
 
-system('py manage.py ' + ' '.join([i for i in argv[1:]]))
-" > .\\orchestrator.py
+django-admin startproject CORE .
 
 
-# Starting project
-printf "\n\nStarting project '${PROJECT_NAME}'...\n"
-
-django-admin startproject ${PROJECT_NAME^^} .
-
-echo "${PROJECT_NAME} created successfully."
-echo "Starting app '${APP_NAME}' now..."
 
 
-# Starting app
-python ./manage.py startapp $APP_NAME
 
-echo "Setting '${APP_NAME}' as an installed app and creating it url address"
+printf "
 
-mkdir static templates
+===========================================================================
+Editting default structure
+===========================================================================
+"
 
-
-# Editing settings.py
-sed -i -e "14 i \\\nfrom os import environ\n\n\n## VIRTUAL ENVIROMENTS ACCESSIBLES USING `environ[\'var_name\']`\n" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "22s/.*/BASE_DIR = Path(__file__).resolve().parent.parent.parent/" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "32s/.*/DEBUG = environ.get('DEBUG', False)/" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "34s/.*/ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(',')/" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "40 i \    # Default" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "47 i \    # 3rd party" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "48 i \    'whitenoise'," .\\${PROJECT_NAME^^}\\settings.py
-sed -i "49 i \    # Local" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "50 i \    '${APP_NAME}'," .\\${PROJECT_NAME^^}\\settings.py
-sed -i "55 i \    'whitenoise.middleware.WhiteNoiseMiddleware'," .\\${PROJECT_NAME^^}\\settings.py
-sed -i "69s/.*/        'DIRS': [BASE_DIR / 'templates'],/" .\\${PROJECT_NAME^^}\\settinggs.py
-sed -i "131 i \STATIC_ROOT = BASE_DIR / 'staticfiles'" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "132 i \STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'" .\\${PROJECT_NAME^^}\\settings.py
-sed -i "133 i \STATICFILES_DIRS = [BASE_DIR / 'static']" .\\${PROJECT_NAME^^}\\settings.py
+echo "from django.contrib import admin
+from django.urls import path, URLPattern
 
 
-# Editing urls.py
-sed -i '17s/.*/from django.urls import path, include/' .\\${PROJECT_NAME^^}\\urls.py
-sed -i "21 i \    path('${APP_NAME}/', include('${APP_NAME}.urls'))," .\\${PROJECT_NAME^^}\\urls.py
-sed -i "21 i \    # User's routes" .\\${PROJECT_NAME^^}\\urls.py
-sed -i "20 i \    # Adm's routes" .\\${PROJECT_NAME^^}\\urls.py
-sed -i "20 i \    # System's routes" .\\${PROJECT_NAME^^}\\urls.py
+urlpatterns: list[URLPattern] = [
+    # System's routes
+    # Admin's routes
+    path('admin/', admin.site.urls),
+    # User's routes
+]" > CORE/urls.py
 
 
-# Editing asgi.py and wsgi.py
-sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\${PROJECT_NAME^^}\\wsgi.py
-sed -i "14s/.*/os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\${PROJECT_NAME^^}\\asgi.py
-
-
-# Editing manage.py
-sed -i "9s/.*/    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${PROJECT_NAME^^}.settings.deploy')/" .\\manage.py
-
-
-# Separating dev and deploy settings/config
-mkdir .\\${PROJECT_NAME}\\settings
-
-mv .\\${PROJECT_NAME}\\settings.py .\\${PROJECT_NAME}\\settings\\base.py
+mkdir CORE/settings
+mv CORE/settings.py CORE/settings/base.py
 
 echo "
-# Custom User model
+\"\"\"" >> CORE/settings/base.py
 
-# AUTH_USER_MODEL = 'account.User'
-# LOGOUT_REDIRECT_URL = 'conta/entrar'
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/CUSTOM_USERS_settings.py" -O ->> CORE/settings/base.py
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/EMAIL_settings.py" -O ->> CORE/settings/base.py
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/MESSAGES_settings.py" -O ->> CORE/settings/base.py
 
-
-# Crispy Forms
-
-# CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-
-# E-mail configs
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = environ['EMAIL_HOST_USER']
-# EMAIL_HOST_PASSWORD = environ['EMAIL_HOST_PASSWORD']
-
-
-# Messages configs for bootstrap alerts
-
-# MESSAGE_TAGS = {
-#     messages.DEBUG: 'alert-primary',
-#     messages.INFO: 'alert-info',
-#     messages.SUCCESS: 'alert-success',
-#     messages.WARNING: 'alert-warning',
-#     messages.ERROR: 'alert-danger',
-# }
-" >> .\\${PROJECT_NAME}\\settings\\base.py
+echo "\"\"\"" >> CORE/settings/base.py
 
 echo "from os import environ
 
-from ${PROJECT_NAME^^}.settings.base import *
+from CORE.settings.base import *
+
+" > CORE/settings/deploy.py
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_deploy.py" -O ->> CORE/settings/deploy.py
 
 
-DATABASES = {
-    # 'default': URL
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': environ.get('DB_NAME'),
-        'USER': environ.get('DB_USER'),
-        'PASSWORD': environ.get('DB_PASSWORD'),
-        'HOST': environ.get('DB_HOST'),
-        'PORT': '5432',
-    }
-}
+echo "import os
 
-DEBUG = environ.get('DEBUG')
-ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(',')
-SECRET_KEY = environ.get('SECRET_KEY')
+from django.core.wsgi import get_wsgi_application
 
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-" > .\\${PROJECT_NAME}\\settings\\deploy.py
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'CORE.settings.deploy')
+
+app = application = get_wsgi_application()" > CORE/wsgi.py
+
+echo "import os
+
+from django.core.asgi import get_asgi_application
 
 
-# Creating apps's view as function
-echo "Creating index view function..."
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'CORE.settings.deploy')
 
-cd .\\${APP_NAME}
+app = application = get_asgi_application()" > CORE/asgi.py
+
+echo "#!/usr/bin/env python
+\"\"\"Django's command-line utility for administrative tasks.\"\"\"
+import os
+import sys
+
+
+def main():
+    \"\"\"Run administrative tasks.\"\"\"
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'CORE.settings.deploy')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            \"Couldn't import Django. Are you sure it's installed and \"
+            \"available on your PYTHONPATH environment variable? Did you \"
+            \"forget to activate a virtual environment?\"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == '__main__':
+    main()" > manage.py
+
+
+
+
+
+printf "
+
+===========================================================================
+Starting app \"${APP_NAME}\"
+===========================================================================
+"
+
+python3 manage.py startapp ${APP_NAME}
+
+
+
+
+
+printf "
+
+===========================================================================
+Editting default app's structure
+===========================================================================
+"
 
 echo "from django.urls import path, URLPattern
 
 from . import views
 
+
 app_name = '${APP_NAME}'
 
 urlpatterns: list[URLPattern] = [
     path('', views.index, name='index'),
-]
-" > .\\urls.py
+]" > ${APP_NAME}/urls.py
 
-echo "def index(req: HttpRequest) -> HttpResponse:
-    pass
-" >> .\\views.py
+echo "from django.shortcuts import render
+from django.http import HttpRequest, HttpResponse
+
+
+# Create your views here
+def index(req: HttpRequest) -> HttpResponse:
+    pass" > ${APP_NAME}/views.py
 
 echo "If using vercel, deal with db and asgi/wsgi app var name
 Remember using 'py orchestrator.py check --deploy'"
-
-echo 'Script completed! Hope you know to continue... :D'
