@@ -25,7 +25,15 @@ cd ${PROJECT_NAME}
 
 
 
+
+
+
+
+
+
+
 printf "
+
 ===========================================================================
 CREATING NEW PROJECT WITH DJANGO_START
 
@@ -36,6 +44,13 @@ PROJECT MAIN DIRECTORY: CORE/
 ENV NAME: env
 ===========================================================================
 "
+
+
+
+
+
+
+
 
 
 
@@ -53,10 +68,14 @@ python3 -m venv env
 
 source env/bin/activate
 
-python3 -m pip install django
-python3 -m pip install whitenoise
-python3 -m pip install gunicorn
-python3 -m pip install psycopg2-binary
+python3 -m pip install django whitenoise gunicorn psycopg2-binary
+
+
+
+
+
+
+
 
 
 
@@ -69,12 +88,16 @@ Creating devops files
 ===========================================================================
 "
 
-echo "Django==5.0
-gunicorn==21.2.0
-psycopg2-binary==2.9.9
-whitenoise==6.6.0" > requirements.txt
+echo "-r ./${PROJECT_NAME^^}/requirements.txt
 
-echo "python3-3.11.2" > runtime.txt
+locust
+tqdm
+pyflakes
+black
+tblib
+coverage" > requirements.dev.txt
+
+echo "python3-3.12" > runtime.txt
 echo "web: gunicorn CORE.wsgi" > Procfile
 wget "https://lucasgoncsilva.github.io/snippets/examples/vercel/deploy/DJANGO_vercel.json" -O vercel.json
 
@@ -88,22 +111,22 @@ echo \"
 ___________________________\"
 echo \"Downloading requirements\"
 echo \"___________________________\"
-python3.9 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 
 echo \"
 ___________________________\"
 echo \"Migrating DB\"
 echo \"___________________________\"
-python3.9 manage.py makemigrations
-python3.9 manage.py migrate
+python3 manage.py makemigrations
+python3 manage.py migrate
 
 
 echo \"
 ___________________________\"
 echo \"Collecting static files (css, img, js)\"
 echo \"___________________________\"
-python3.9 manage.py collectstatic --noinput --clear
+python3 manage.py collectstatic --noinput --clear
 
 
 echo \"
@@ -125,6 +148,111 @@ echo \"___________________________\"
 
 
 
+
+
+
+
+
+
+
+printf "
+
+===========================================================================
+Creating Docker stuff
+===========================================================================
+"
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_dockerfile" -O ->> Dockerfile
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose.yml" -O ->> docker-compose.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose_dev.yml" -O ->> docker-compose-dev.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose_unittest.yml" -O ->> docker-compose-unittest.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose_load.yml" -O ->> docker-compose-load.yml
+
+
+
+
+
+
+
+
+
+
+
+
+printf "
+
+===========================================================================
+Handling load tests
+===========================================================================
+"
+
+mkdir loadtests
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/LOADTESTS_utils.py" -O ->> loadtests/utils.py
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/LOADTESTS_load_test.py" -O ->> loadtests/load_test.py
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/LOADTESTS_stress_test.py" -O ->> loadtests/stress_test.py
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/LOADTESTS_soak_test.py" -O ->> loadtests/soak_test.py
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/LOADTESTS_spike_test.py" -O ->> loadtests/spike_test.py
+
+mkdir report
+
+mkdir report/html
+
+mkdir report/csv report/csv/spike report/csv/load report/csv/stress report/csv/soak
+
+touch report/csv/soak/.gitkeep report/csv/stress/.gitkeep report/csv/load/.gitkeep report/csv/spike/.gitkeep
+
+
+
+
+
+
+
+
+
+
+
+
+printf "
+
+===========================================================================
+Attaching tests to GitHub Workflows
+===========================================================================
+"
+
+mkdir .github .github/workflows
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_code_analysis.yml" -O ->> .github/workflows/code_analysis.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_loadtest.yml" -O ->> .github/workflows/loadtest.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_soaktest.yml" -O ->> .github/workflows/soaktest.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_spiketest.yml" -O ->> .github/workflows/spiketest.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_stresstest.yml" -O ->> .github/workflows/stresstest.yml
+
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_unittest.yml" -O ->> .github/workflows/unittest.yml
+
+
+
+
+
+
+
+
+
+
+
+
 printf "
 
 ===========================================================================
@@ -136,6 +264,17 @@ mkdir ${PROJECT_NAME^^}
 cd ${PROJECT_NAME^^}
 
 django-admin startproject CORE .
+
+pip freeze > requirements.txt
+
+pip install -r ../requirements.dev.txt
+
+
+
+
+
+
+
 
 
 
@@ -166,8 +305,10 @@ mv CORE/settings.py CORE/settings/base.py
 echo "
 \"\"\"" >> CORE/settings/base.py
 
-wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/CUSTOM_USERS_settings.py" -O ->> CORE/settings/base.py
+wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/CUSTOM_USER_settings.py" -O ->> CORE/settings/base.py
+
 wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/EMAIL_settings.py" -O ->> CORE/settings/base.py
+
 wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/MESSAGES_settings.py" -O ->> CORE/settings/base.py
 
 echo "\"\"\"" >> CORE/settings/base.py
@@ -226,6 +367,13 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+
+
+
 printf "
 
 ===========================================================================
@@ -234,6 +382,13 @@ Starting app \"${APP_NAME}\"
 "
 
 python3 manage.py startapp ${APP_NAME}
+
+
+
+
+
+
+
 
 
 
@@ -265,5 +420,8 @@ from django.http import HttpRequest, HttpResponse
 def index(req: HttpRequest) -> HttpResponse:
     pass" > ${APP_NAME}/views.py
 
-echo "If using vercel, deal with db and asgi/wsgi app var name
-Remember using 'py orchestrator.py check --deploy'"
+printf "=====DISCLAIMER=====
+
+* If using vercel, deal with db and asgi/wsgi app var name
+* Remember using 'py orchestrator.py check --deploy'
+* "
