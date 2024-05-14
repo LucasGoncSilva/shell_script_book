@@ -19,4 +19,4 @@ mkdir ${PROJECT_NAME}
 cd ${PROJECT_NAME}
 
 # npm create vite@latest
-npm create vite@latest my-vue-app -- --template react-ts
+npm create vite@latest ${PROJECT_NAME} -- --template react-ts
