@@ -84,6 +84,34 @@ python3 -m pip install django whitenoise gunicorn psycopg2-binary
 printf "
 
 ===========================================================================
+Dealing with Git initialization
+===========================================================================
+"
+
+wget "https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore" -O ->> .gitignore
+
+printf "" >> .gitignore
+
+git init
+
+git add .
+
+git commit -m "initial commit"
+
+
+
+
+
+
+
+
+
+
+
+
+printf "
+
+===========================================================================
 Creating devops files
 ===========================================================================
 "
@@ -144,6 +172,10 @@ Ending deploy build\"
 echo \"___________________________\"
 " >> deploy.sh
 
+git add .
+
+git commit -m "creates devops files"
+
 
 
 
@@ -171,6 +203,10 @@ wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_do
 wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose_unittest.yml" -O ->> docker-compose-unittest.yml
 
 wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/DEPLOY_docker_compose_load.yml" -O ->> docker-compose-load.yml
+
+git add .
+
+git commit -m "creates docker stuff"
 
 
 
@@ -210,6 +246,10 @@ mkdir report/csv report/csv/spike report/csv/load report/csv/stress report/csv/s
 
 touch report/csv/soak/.gitkeep report/csv/stress/.gitkeep report/csv/load/.gitkeep report/csv/spike/.gitkeep
 
+git add .
+
+git commit -m "handles load tests scripts"
+
 
 
 
@@ -242,6 +282,10 @@ wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS
 
 wget "https://lucasgoncsilva.github.io/snippets/examples/python/django/WORKFLOWS_unittest.yml" -O ->> .github/workflows/unittest.yml
 
+git add .
+
+git commit -m "attaches tests to GitHub Workflows"
+
 
 
 
@@ -268,6 +312,10 @@ django-admin startproject CORE .
 pip freeze > requirements.txt
 
 pip install -r ../requirements.dev.txt
+
+git add .
+
+git commit -m "Starts CORE project"
 
 
 
@@ -363,6 +411,10 @@ def main():
 if __name__ == '__main__':
     main()" > manage.py
 
+git add .
+
+git commit -m "updates the default structure"
+
 
 
 
@@ -382,6 +434,10 @@ Starting app \"${APP_NAME}\"
 "
 
 python3 manage.py startapp ${APP_NAME}
+
+git add .
+
+git commit -m "initializes the first app"
 
 
 
@@ -420,8 +476,23 @@ from django.http import HttpRequest, HttpResponse
 def index(req: HttpRequest) -> HttpResponse:
     pass" > ${APP_NAME}/views.py
 
-printf "=====DISCLAIMER=====
+git add .
+
+git commit -m "updates the apps's structure"
+
+
+
+
+printf "
+===================================DISCLAIMER===================================
 
 * If using vercel, deal with db and asgi/wsgi app var name
 * Remember using 'py orchestrator.py check --deploy'
-* "
+* Add 'whitenoise' to INSTALLED_APPS
+* Add 'whitenoise.middleware.WhiteNoiseMiddleware' as second MIDDLEWARE
+* Add [BASE_DIR / 'templates'] to DIRS at TEMPLATES
+* Add WSGI_APPLICATION = 'CORE.wsgi.application' below TEMPLATES
+* For more info consider check https://lucasgoncsilva.github.io/snippets/
+
+================================================================================
+"
